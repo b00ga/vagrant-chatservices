@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+  - name: OS & Distribution related info
+    debug:
+      var: '{{ item }}'
+    with_items:
+    - ansible_os_family
+    - ansible_distribution
+    - ansible_distribution_version
+    - ansible_distribution_major_version
+    - ansible_distribution_minor_version
+
+  - name: Install tools
+    package:
+      name: vim
+      state: present
+
+###  - name: Install IRC packages
+###    package:
+###      name: ngircd,anope
+###      state: present
+###    tags:
+###      - irc
+###
+###  - name: Install XMPP packages
+###    package:
+###      name: ejabberd
+###      state: present
+###    tags:
+###      - xmpp
+###
+###  - name: mattermost
+###    import_role:
+###      name: xtream1101.mattermost
+###    tags:
+###      - mattermost
+
+  - name: xop
+    import_role:
+      name: nrl.xop
+    tags:
+      - xop

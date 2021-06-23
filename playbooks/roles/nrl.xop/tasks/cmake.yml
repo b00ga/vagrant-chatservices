@@ -1,0 +1,30 @@
+---
+- name: Fetch cmake release information
+  uri:
+    url: https://api.github.com/repos/Kitware/CMake/releases/latest
+  register: xop_cmake_release
+
+- name: Determine URL to latest cmake download
+  set_fact:
+    xop_cmake_download_url: "{{ (xop_cmake_release.json.assets | selectattr('name', 'match', '^cmake.*linux-x86_64.tar.gz') | list)[0].browser_download_url }}"
+
+- name: Create cmake work directory
+  file:
+    path: '{{ xop_work_dir }}/cmake'
+    state: directory
+
+- name: Fetch latest cmake download
+  unarchive:
+    src: '{{ xop_cmake_download_url }}'
+    dest: '{{ xop_work_dir }}/cmake'
+    remote_src: yes
+
+- name: Determine cmake download directory name
+  find:
+    paths: '{{ xop_work_dir }}/cmake'
+    file_type: directory
+  register: xop_cmake_extracted_dir
+
+- name: Set variable for downloaded cmake binary
+  set_fact:
+    xop_cmake_binary: '{{ xop_cmake_extracted_dir.files[0].path }}/bin/cmake'

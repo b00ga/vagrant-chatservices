@@ -1,0 +1,38 @@
+---
+- name: Install OpenJDK 8
+  package:
+    name: openjdk-8-jdk-headless
+    state: present
+
+- name: Build norm
+  include: norm.yml
+
+- name: Fetch xop source
+  git:
+    repo: '{{ xop_git_repo }}'
+    dest: '{{ xop_build_dir }}'
+    version: '{{ xop_git_version }}'
+    force: yes
+
+- name: Disable xop android build
+  file:
+    path: '{{ xop_build_dir }}/xop-android/build.gradle'
+    state: absent
+
+- name: Copy in updated norm binaries
+  copy:
+    src: '{{ item.source }}'
+    dest: '{{ item.dest }}'
+    remote_src: yes
+  with_items:
+  - source: '{{ xop_work_dir }}/norm/build/libnorm.so'
+    dest: '{{ xop_build_dir }}/xop/jniLibs/x86_64/libnorm.so'
+  - source: '{{ xop_work_dir }}/norm/lib/libmil_navy_nrl_norm.so'
+    dest: '{{ xop_build_dir }}/xop/jniLibs/x86_64/libmil_navy_nrl_norm.so'
+  - source: '{{ xop_norm_jar_file.files[0].path }}'
+    dest: '{{ xop_build_dir }}/xop/libs/norm.jar'
+
+- name: Build xop
+  command: ./gradlew deployXOP
+  args:
+    chdir: '{{ xop_build_dir }}'

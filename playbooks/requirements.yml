@@ -1,0 +1,6 @@
+---
+roles:
+  - name: xtream1101.mattermost
+
+collections:
+  - name: nginxinc.nginx_core

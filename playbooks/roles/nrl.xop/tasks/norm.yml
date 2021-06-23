@@ -1,0 +1,56 @@
+---
+- name: Fetch norm source
+  git:
+    repo: '{{ xop_norm_git_repo }}'
+    dest: '{{ xop_work_dir }}/norm'
+    version: '{{ xop_norm_git_version }}'
+
+- name: Fetch latest cmake
+  include: cmake.yml
+
+- name: Create norm build directory
+  file:
+    path: '{{ xop_work_dir }}/norm/build'
+    state: directory
+
+- name: Install build tools and dependencies
+  package:
+    name: make,gcc,g++,libxml2-dev
+    state: present
+
+- name: Configure norm source
+  command: '{{ xop_cmake_binary }} -DBUILD_SHARED_LIBS=ON ..'
+  args:
+    chdir: '{{ xop_work_dir }}/norm/build'
+
+- name: Build norm
+  command: make
+  args:
+    chdir: '{{ xop_work_dir }}/norm/build'
+
+- name: Set java home directory
+  shell: java -XshowSettings:properties -version 2>&1 | awk '/java.home/ { print $3 }' | xargs dirname
+  register: xop_norm_java_home
+
+- name: Install ant
+  package:
+    name: ant
+    state: present
+
+- name: Build norm Java JAR
+  command: ant jar
+  args:
+    chdir: '{{ xop_work_dir }}/norm/makefiles/java'
+
+- name: Determine norm JAR name
+  find:
+    paths: '{{ xop_work_dir }}/norm/lib'
+    patterns: 'norm*.jar'
+  register: xop_norm_jar_file
+
+- name: Build norm Java JNI library
+  command: make -f Makefile.linux
+  args:
+    chdir: '{{ xop_work_dir }}/norm/makefiles/java'
+  environment:
+    JAVA_HOME: '{{ xop_norm_java_home.stdout }}'

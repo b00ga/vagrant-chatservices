@@ -1,0 +1,12 @@
+---
+# XOP build variables
+xop_git_repo: https://github.com/USNavalResearchLaboratory/xmpp-overlay.git
+xop_git_version: master
+# Work dir is where we get xop source and dependencies
+xop_work_dir: '{{ ansible_user_dir }}/xop'
+# Build dir is where we clone the xop source and build it
+xop_build_dir: '{{ ansible_user_dir }}/xop/xop-src'
+
+# NORM build variables
+xop_norm_git_repo: https://github.com/USNavalResearchLaboratory/norm.git
+xop_norm_git_version: master
